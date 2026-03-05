@@ -64,27 +64,49 @@ router.delete("/users/:id", async (req, res) => {
 });
 
 //THIS USES AGGREGATION TO GET USER DETAILS WITH ADDRESS
+// from user model to address model
+
+// router.get("/users-with-address", async (req, res) => {
+//   try {
+
+//     const users = await User.aggregate([
+//       {
+//         $lookup: {
+//           from: "addresses",       
+//           localField: "_id",       
+//           foreignField: "userId",  
+//           as: "address" 
+//         }
+//       },
+//       {
+//         $match: {
+//           address: { $ne: [] }     // filter users with address only
+//         }
+//       }
+//     ]);
+
+//     res.json(users);
+
+//   } catch (error) {
+//     console.log(error);
+//     res.status(500).json(error);
+//   }
+// });
+
+
+
+//users with address using virtual populate method
 
 router.get("/users-with-address", async (req, res) => {
   try {
 
-    const users = await User.aggregate([
-      {
-        $lookup: {
-          from: "addresses",       
-          localField: "_id",       
-          foreignField: "userId",  
-          as: "address" 
-        }
-      },
-      {
-        $match: {
-          address: { $ne: [] }     // filter users with address only
-        }
-      }
-    ]);
+    const users = await User
+      .find()
+      .populate("address");
 
-    res.json(users);
+    const filteredUsers = users.filter(user => user.address.length > 0);
+
+    res.json(filteredUsers);
 
   } catch (error) {
     console.log(error);
