@@ -1,5 +1,4 @@
 function UserList({ users, deleteUser, editUser, selectUser }) {
-// function UserList({ users, deleteUser, editUser }) {
 
   return (
     <div>

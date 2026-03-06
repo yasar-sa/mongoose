@@ -1,10 +1,12 @@
 import express from "express";
 const router = express.Router();
 import User from "../models/User.js";
+import validateUser from "../middleware/validateUser.js";
+
 
 
 // CREATE USER
-router.post("/users", async (req, res) => {
+router.post("/users",validateUser, async (req, res) => {
   try {
     const user = new User(req.body);
     const savedUser = await user.save();
@@ -38,7 +40,7 @@ router.get("/users/:id", async (req, res) => {
 
 
 // UPDATE USER
-router.put("/users/:id", async (req, res) => {
+router.put("/users/:id", validateUser, async (req, res) => {
   try {
     const updatedUser = await User.findByIdAndUpdate(
       req.params.id,
