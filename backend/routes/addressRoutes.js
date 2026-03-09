@@ -119,4 +119,23 @@ router.delete("/address/:id", async (req, res) => {
 
 
 
+// group by country
+router.get("/addresss-group", async (req, res) => {
+  try {
+    const address = await Address.aggregate([
+      {
+    $group: {
+      _id: "$country",
+      totalAddresses: { $sum: 1 }
+
+    }
+  }
+    ]);
+
+    res.json(address);
+  } catch (error) {
+    console.log(error);
+    res.status(500).json(error);
+  }
+});
 export default router;

@@ -15,14 +15,73 @@ router.post("/users", validateUser, async (req, res) => {
 });
 
 // READ ALL USERS
+// router.get("/users", async (req, res) => {
+//   try {
+//     const users = await User.find();
+//     res.json(users);
+//   } catch (error) {
+//     res.status(500).json({ error: error.message });
+//   }
+// });
+
+
+//user get using pagination
+// router.get("/users", async (req, res) => {
+//   try {
+
+//     const page = parseInt(req.query.page) || 1;
+//     const limit = parseInt(req.query.limit) || 5;
+
+//     const skip = (page - 1) * limit;
+
+//     const users = await User.find()
+//       .skip(skip)
+//       .limit(limit);
+
+//     res.json(users);
+
+//   } catch (error) {
+//     res.status(500).json(error);
+//   }
+// });
+
+
+//better pagination and with search functionality
 router.get("/users", async (req, res) => {
   try {
-    const users = await User.find();
-    res.json(users);
+
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 5;
+
+    const search = req.query.search || "";
+
+    const skip = (page - 1) * limit;
+
+    const query = {
+      $or: [
+        { name: { $regex: search, $options: "i" } },
+        { email: { $regex: search, $options: "i" } }
+      ]
+    };
+    const totalUsers = await User.countDocuments(query);
+
+    const users = await User.find(query)
+      .skip(skip)
+      .limit(limit);
+
+    res.json({
+      totalUsers,
+      currentPage: page,
+      totalPages: Math.ceil(totalUsers / limit),
+      users
+    });
+
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    res.status(500).json(error);
   }
 });
+
+
 
 // READ SINGLE USER
 router.get("/users/:id", async (req, res) => {
@@ -60,31 +119,84 @@ router.delete("/users/:id", async (req, res) => {
 //THIS USES AGGREGATION TO GET USER DETAILS WITH ADDRESS
 // from user model to address model
 
+// router.get("/users-with-address", async (req, res) => {
+//   try {
+
+//     const users = await User.aggregate([
+//       {
+//         $lookup: {
+//           from: "addresses",
+//           localField: "_id",
+//           foreignField: "userId",
+//           as: "address"
+//         }
+//       },
+
+//       {
+//             $unset: ["__v", "address.__v", "address._id", "address.userId"]
+//       }
+//     ]);
+
+//     res.json(users);
+
+//   } catch (error) {
+//     console.log(error);
+//     res.status(500).json(error);
+//   }
+// });
+
+//facet aggregation method to get user details with address
+// one query - multiple results
 router.get("/users-with-address", async (req, res) => {
   try {
-
     const users = await User.aggregate([
       {
         $lookup: {
           from: "addresses",
           localField: "_id",
           foreignField: "userId",
-          as: "address"
-        }
+          as: "address",
+        },
       },
-      // {
-      //   $match: {
-      //     address: { $ne: [] }     // filter users with address only
-      //   }
-      // },
 
       {
-            $unset: ["__v", "address.__v", "address._id", "address.userId"]
-      }
+        $unset: [
+          "__v",
+          "address.__v",
+          "address._id",
+          "address.userId",
+          "_id",
+          "address.pincode",
+        ],
+      },
+      {
+        $facet: {
+          usersWithAddress: [{ $match: { address: { $ne: [] } } }],
+
+          usersWithoutAddress: [{ $match: { address: { $eq: [] } } }],
+        },
+      },
     ]);
 
     res.json(users);
+  } catch (error) {
+    console.log(error);
+    res.status(500).json(error);
+  }
+});
 
+//addFields method to add a new field to the user document based on the address field value
+router.get("/users-addFields", async (req, res) => {
+  try {
+    const users = await User.aggregate([
+      {
+        $addFields: {
+          ageAfterFiveYears: { $add: ["$age", 5] },
+        },
+      },
+    ]);
+
+    res.json(users);
   } catch (error) {
     console.log(error);
     res.status(500).json(error);
@@ -131,8 +243,6 @@ router.get("/users-with-address", async (req, res) => {
 //   }
 // });
 
-
-
 // users with address using virtual populate method
 
 // router.get("/users-with-address", async (req, res) => {
@@ -153,7 +263,6 @@ router.get("/users-with-address", async (req, res) => {
 
 router.get("/users-dubai", async (req, res) => {
   try {
-
     const users = await User.aggregate([
       {
         $lookup: {
@@ -163,28 +272,27 @@ router.get("/users-dubai", async (req, res) => {
             {
               $match: {
                 $expr: {
-                  $eq: ["$userId", "$$userId"]
-                }
-              }
+                  $eq: ["$userId", "$$userId"],
+                },
+              },
             },
             {
               $match: {
-                country: "Dubai"
-              }
-            }
+                country: "Dubai",
+              },
+            },
           ],
-          as: "address"
-        }
+          as: "address",
+        },
       },
       {
         $match: {
-          address: { $ne: [] }
-        }
-      }
+          address: { $ne: [] },
+        },
+      },
     ]);
 
     res.json(users);
-
   } catch (error) {
     res.status(500).json(error);
   }
