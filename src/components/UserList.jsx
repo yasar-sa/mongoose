@@ -30,7 +30,7 @@ function UserList({ users, deleteUser, editUser, selectUser }) {
             Edit
           </button>
 
-          <button onClick={() => deleteUser(user._id)}>
+          <button onClick={() => dispatch(deleteUser(user._id))}>
             Delete
           </button>
           <button onClick={() => {

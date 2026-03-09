@@ -14,6 +14,7 @@ import UserForm from "./components/UserForm";
 import UserList from "./components/UserList";
 import AddressForm from "./components/AddressForm";
 import AddressList from "./components/AddressList";
+import Sidebar from "./components/Sidebar";
 
 function App() {
 
@@ -107,6 +108,7 @@ const handleAddressUpdate = async (id, data) => {
     <div style={{ padding: "20px" }}>
 
       <h2>CRUD APPLICATION</h2>
+      <Sidebar />
 
       <UserForm
         addUser={addUser}

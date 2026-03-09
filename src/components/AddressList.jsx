@@ -1,4 +1,22 @@
+import { useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { fetchAddresses } from "../redux/addressSlice";
+
+
 function AddressList({ addresses = [], editAddress, removeAddress }) {
+       const dispatch = useDispatch();
+
+  const {  loading, error } = useSelector(
+    (state) => state.users
+  );
+
+  useEffect(() => {
+    dispatch(fetchAddresses());
+  }, [dispatch]);
+
+  if (loading) return <p>Loading...</p>;
+
+  if (error) return <p>Error: {error}</p>;
 
   return (
     <div>

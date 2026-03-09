@@ -28,7 +28,7 @@ api.interceptors.response.use(
 
     if (error.response.status === 401) {
       alert("Session expired. Please login again.");
-      window.location.href = "/login";
+      // window.location.href = "/login";
     }
 
     return Promise.reject(error);
