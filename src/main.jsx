@@ -1,17 +1,30 @@
 import { StrictMode } from 'react'
-import { createRoot } from 'react-dom/client'
+// import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from './App.jsx'
 import UsersWithAddress from './components/UsersWithAddress.jsx'
+import Dashboard from './components/Dashboard.jsx'
+import { Provider } from "react-redux";
+import { store } from "./redux/store";
+import ReactDOM from "react-dom/client";
 
-createRoot(document.getElementById('root')).render(
-  <StrictMode>
+
+// createRoot(document.getElementById('root')).render(
+//   <StrictMode>
+//     {/* <App />
+//     <UsersWithAddress /> */}
+//     <Dashboard />
+//   </StrictMode>,
+// )
+
+const root = ReactDOM.createRoot(document.getElementById("root"));
+
+root.render(
+  <Provider store={store}>
     <App />
-    <UsersWithAddress />
-  </StrictMode>,
-)
-
-
+    {/* < Dashboard /> */}
+  </Provider>
+);
 // TASK
 
 // Create a user collection and implement crud operations for it
