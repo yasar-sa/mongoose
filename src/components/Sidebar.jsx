@@ -13,7 +13,7 @@ function Sidebar() {
         Toggle Sidebar
       </button>
 
-      {sidebarOpen && <p>Sidebar is Open</p>}
+      {sidebarOpen && <p>Sidebar is implemented using React Redux</p>}
 
     </div>
   );

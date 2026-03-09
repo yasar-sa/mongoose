@@ -3,10 +3,8 @@ const router = express.Router();
 import User from "../models/User.js";
 import validateUser from "../middleware/validateUser.js";
 
-
-
 // CREATE USER
-router.post("/users",validateUser, async (req, res) => {
+router.post("/users", validateUser, async (req, res) => {
   try {
     const user = new User(req.body);
     const savedUser = await user.save();
@@ -15,7 +13,6 @@ router.post("/users",validateUser, async (req, res) => {
     res.status(400).json({ error: error.message });
   }
 });
-
 
 // READ ALL USERS
 router.get("/users", async (req, res) => {
@@ -27,7 +24,6 @@ router.get("/users", async (req, res) => {
   }
 });
 
-
 // READ SINGLE USER
 router.get("/users/:id", async (req, res) => {
   try {
@@ -38,22 +34,18 @@ router.get("/users/:id", async (req, res) => {
   }
 });
 
-
 // UPDATE USER
 router.put("/users/:id", validateUser, async (req, res) => {
   try {
-    const updatedUser = await User.findByIdAndUpdate(
-      req.params.id,
-      req.body,
-      { new: true }
-    );
+    const updatedUser = await User.findByIdAndUpdate(req.params.id, req.body, {
+      new: true,
+    });
 
     res.json(updatedUser);
   } catch (error) {
     res.status(400).json({ error: error.message });
   }
 });
-
 
 // DELETE USER
 router.delete("/users/:id", async (req, res) => {
@@ -68,21 +60,65 @@ router.delete("/users/:id", async (req, res) => {
 //THIS USES AGGREGATION TO GET USER DETAILS WITH ADDRESS
 // from user model to address model
 
+router.get("/users-with-address", async (req, res) => {
+  try {
+
+    const users = await User.aggregate([
+      {
+        $lookup: {
+          from: "addresses",
+          localField: "_id",
+          foreignField: "userId",
+          as: "address"
+        }
+      },
+      // {
+      //   $match: {
+      //     address: { $ne: [] }     // filter users with address only
+      //   }
+      // },
+
+      {
+            $unset: ["__v", "address.__v", "address._id", "address.userId"]
+      }
+    ]);
+
+    res.json(users);
+
+  } catch (error) {
+    console.log(error);
+    res.status(500).json(error);
+  }
+});
+
+//pipeline lookup method is the advanced version of the basic lookup method. It allows us to perform more complex operations on the joined collection, such as filtering, sorting, and projecting fields. In this case, we are using the pipeline lookup method to filter users who have an address and return only those users in the response.
+
 // router.get("/users-with-address", async (req, res) => {
 //   try {
 
 //     const users = await User.aggregate([
 //       {
 //         $lookup: {
-//           from: "addresses",       
-//           localField: "_id",       
-//           foreignField: "userId",  
-//           as: "address" 
+//           from: "addresses",
+//           let: { userId: "$_id" },
+//           pipeline: [
+//             {
+//               $match: {
+//                 $expr: {
+//                   $and: [
+//                     { $eq: ["$userId", "$$userId"] },
+//                     { $eq: ["$country", "Dubai"] }
+//                   ]
+//                 }
+//               }
+//             }
+//           ],
+//           as: "address"
 //         }
 //       },
 //       {
 //         $match: {
-//           address: { $ne: [] }     // filter users with address only
+//           address: { $ne: [] }
 //         }
 //       }
 //     ]);
@@ -97,24 +133,61 @@ router.delete("/users/:id", async (req, res) => {
 
 
 
-//users with address using virtual populate method
+// users with address using virtual populate method
 
-router.get("/users-with-address", async (req, res) => {
+// router.get("/users-with-address", async (req, res) => {
+//   try {
+//     const users = await User.find().populate("address");
+
+//     const filteredUsers = users.filter((user) => user.address.length > 0);
+
+//     res.json(filteredUsers);
+//   } catch (error) {
+//     console.log(error);
+//     res.status(500).json(error);
+//   }
+// });
+
+//pipeline lookup method to filter users based on address field value
+//created a new route to get users who have an address in dubai using pipeline lookup method.
+
+router.get("/users-dubai", async (req, res) => {
   try {
 
-    const users = await User
-      .find()
-      .populate("address");
+    const users = await User.aggregate([
+      {
+        $lookup: {
+          from: "addresses",
+          let: { userId: "$_id" },
+          pipeline: [
+            {
+              $match: {
+                $expr: {
+                  $eq: ["$userId", "$$userId"]
+                }
+              }
+            },
+            {
+              $match: {
+                country: "Dubai"
+              }
+            }
+          ],
+          as: "address"
+        }
+      },
+      {
+        $match: {
+          address: { $ne: [] }
+        }
+      }
+    ]);
 
-    const filteredUsers = users.filter(user => user.address.length > 0);
-
-    res.json(filteredUsers);
+    res.json(users);
 
   } catch (error) {
-    console.log(error);
     res.status(500).json(error);
   }
 });
-
 
 export default router;
