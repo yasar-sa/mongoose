@@ -1,6 +1,9 @@
 import { useState, useEffect } from "react";
+import { useDispatch } from "react-redux";
+import { addUser} from "../redux/userSlice";
 
-function UserForm({ addUser, updateUser, editingUser }) {
+function UserForm({ updateUser, editingUser }) {
+  const dispatch = useDispatch();
 
   const [form, setForm] = useState({
     name: "",
@@ -21,19 +24,19 @@ function UserForm({ addUser, updateUser, editingUser }) {
     });
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
+ const handleSubmit = (e) => {
+  e.preventDefault();
 
-    if (editingUser) {
-      updateUser(editingUser._id, form);
-      alert("User updated successfully!");
-    } else {
-      addUser(form);
-      alert("User created successfully!");
-    }
+  if (editingUser) {
+    updateUser(editingUser._id, form);
+    alert("User updated successfully!");
+  } else {
+    dispatch(addUser(form));
+    alert("User created successfully!");
+  }
 
-    setForm({ name: "", email: "", age: "" });
-  };
+  setForm({ name: "", email: "", age: "" });
+};
 
   return (
     <form onSubmit={handleSubmit}>

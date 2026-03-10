@@ -11,6 +11,11 @@ export const deleteUser = createAsyncThunk("users/deleteUser", async (id) => {
   return id;
 });
 
+export const addUser = createAsyncThunk("users/addUser", async (userData) => {
+  const response = await api.post("/users", userData);
+  return response.data;
+});
+
 const userSlice = createSlice({
   name: "users",
 
@@ -40,6 +45,12 @@ const userSlice = createSlice({
       })
       .addCase(deleteUser.fulfilled, (state, action) => {
         state.users = state.users.filter((user) => user.id !== action.payload);
+      })
+
+      .addCase(addUser.fulfilled, (state, action) => {
+        state.loading = false;
+        //add new user to the existing list of users
+        state.users.push(action.payload);
       });
   },
 });

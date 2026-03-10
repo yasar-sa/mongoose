@@ -1,13 +1,22 @@
 import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { fetchUsers } from "../redux/userSlice";
+import { fetchUsers , deleteUser} from "../redux/userSlice";
 
-function UserList({ users, deleteUser, editUser, selectUser }) {
+function UserList({editUser, selectUser }) {
      const dispatch = useDispatch();
 
-  const {  loading, error } = useSelector(
-    (state) => state.users
-  );
+  const { users, loading, error } = useSelector(
+  (state) => state.users
+);
+
+//adding extra function to handle delete user for confirmation before delete user
+const handleDelete = (id) => {
+  const confirmDelete = window.confirm("Are you sure you want to delete this user?");
+
+  if (confirmDelete) {
+    dispatch(deleteUser(id));
+  }
+};
 
   useEffect(() => {
     dispatch(fetchUsers());
@@ -30,7 +39,7 @@ function UserList({ users, deleteUser, editUser, selectUser }) {
             Edit
           </button>
 
-          <button onClick={() => dispatch(deleteUser(user._id))}>
+          <button onClick={() => handleDelete(user._id)}>
             Delete
           </button>
           <button onClick={() => {

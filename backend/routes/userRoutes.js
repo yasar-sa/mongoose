@@ -15,14 +15,14 @@ router.post("/users", validateUser, async (req, res) => {
 });
 
 // READ ALL USERS
-// router.get("/users", async (req, res) => {
-//   try {
-//     const users = await User.find();
-//     res.json(users);
-//   } catch (error) {
-//     res.status(500).json({ error: error.message });
-//   }
-// });
+router.get("/users", async (req, res) => {
+  try {
+    const users = await User.find();
+    res.json(users);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
 
 
 //user get using pagination
@@ -47,39 +47,39 @@ router.post("/users", validateUser, async (req, res) => {
 
 
 //better pagination and with search functionality
-router.get("/users", async (req, res) => {
-  try {
+// router.get("/users", async (req, res) => {
+//   try {
 
-    const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 5;
+//     const page = parseInt(req.query.page) || 1;
+//     const limit = parseInt(req.query.limit) || 5;
 
-    const search = req.query.search || "";
+//     const search = req.query.search || "";
 
-    const skip = (page - 1) * limit;
+//     const skip = (page - 1) * limit;
 
-    const query = {
-      $or: [
-        { name: { $regex: search, $options: "i" } },
-        { email: { $regex: search, $options: "i" } }
-      ]
-    };
-    const totalUsers = await User.countDocuments(query);
+//     const query = {
+//       $or: [
+//         { name: { $regex: search, $options: "i" } },
+//         { email: { $regex: search, $options: "i" } }
+//       ]
+//     };
+//     const totalUsers = await User.countDocuments(query);
 
-    const users = await User.find(query)
-      .skip(skip)
-      .limit(limit);
+//     const users = await User.find(query)
+//       .skip(skip)
+//       .limit(limit);
 
-    res.json({
-      totalUsers,
-      currentPage: page,
-      totalPages: Math.ceil(totalUsers / limit),
-      users
-    });
+//     res.json({
+//       totalUsers,
+//       currentPage: page,
+//       totalPages: Math.ceil(totalUsers / limit),
+//       users
+//     });
 
-  } catch (error) {
-    res.status(500).json(error);
-  }
-});
+//   } catch (error) {
+//     res.status(500).json(error);
+//   }
+// });
 
 
 
