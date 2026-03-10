@@ -26,6 +26,15 @@ function UserForm({ updateUser, editingUser }) {
 
  const handleSubmit = (e) => {
   e.preventDefault();
+  if (!form.name || !form.email || !form.age) {
+    alert("Please fill in all fields");
+    return;
+  }
+
+  if (isNaN(form.age) || form.age <= 0) {
+    alert("Please enter a valid age");
+    return;
+  }
 
   if (editingUser) {
     updateUser(editingUser._id, form);
